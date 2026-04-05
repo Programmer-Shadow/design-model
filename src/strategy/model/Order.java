@@ -1,4 +1,4 @@
-package pricing;
+package strategy.model;
 
 // 订单实体：作为策略计算的输入参数。
 public class Order {

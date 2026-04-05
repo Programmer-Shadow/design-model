@@ -1,4 +1,6 @@
-package pricing;
+package strategy.service.pricing;
+
+import strategy.model.Order;
 
 /**
  * 策略接口：

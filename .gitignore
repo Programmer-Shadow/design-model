@@ -1,6 +1,7 @@
 ### IntelliJ IDEA ###
 out/
 build/
+.idea/ApifoxUploaderProjectSetting.xml
 !**/src/main/**/out/
 !**/src/test/**/out/
 .kotlin

@@ -1,4 +1,6 @@
-package pricing;
+package strategy.service.pricing;
+
+import strategy.model.Order;
 
 public class VipDiscountStrategy implements DiscountStrategy {
     @Override

@@ -1,10 +1,12 @@
-package pricing;
+package strategy.service.pricing;
+
+import strategy.model.Order;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class DiscountContext {
-    // 上下文对象：维护“策略名 -> 策略实现”的映射，并负责调度。
+    // 上下文对象：维护"策略名 -> 策略实现"的映射，并负责调度。
     private final Map<String, DiscountStrategy> strategyMap = new HashMap<>();
 
     public DiscountContext() {
