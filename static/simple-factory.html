@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>简单工厂模式 Demo</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background: #f5f7fb; color: #1f2937; margin: 0; }
+    .nav { background: #1e293b; padding: 12px 24px; display: flex; gap: 20px; align-items: center; }
+    .nav a { color: #94a3b8; text-decoration: none; font-size: 14px; padding: 4px 8px; border-radius: 6px; }
+    .nav a.active { color: #fff; background: #059669; }
+    .nav a:hover:not(.active) { color: #e2e8f0; }
+    .card { max-width: 640px; margin: 32px auto; background: #fff; border-radius: 12px; padding: 28px; box-shadow: 0 8px 20px rgba(0,0,0,.08); }
+    h1 { margin-top: 0; font-size: 22px; }
+    .desc { font-size: 13px; color: #6b7280; margin-bottom: 20px; line-height: 1.6; }
+    .desc code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+    .row { margin-bottom: 12px; display: flex; gap: 10px; align-items: center; }
+    label { width: 80px; font-size: 14px; }
+    select, input { flex: 1; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; }
+    button { width: 100%; margin-top: 8px; padding: 11px; border: 0; border-radius: 8px; background: #059669; color: #fff; cursor: pointer; font-size: 15px; font-weight: 500; }
+    button:hover { background: #047857; }
+    .section-label { margin: 20px 0 8px; font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: .6px; }
+    .trace { padding: 10px 14px; border-left: 3px solid #059669; background: #ecfdf5; border-radius: 0 6px 6px 0; font-size: 13px; font-family: 'Consolas', monospace; }
+    pre { background: #0f172a; color: #cbd5e1; padding: 14px; border-radius: 8px; overflow: auto; font-size: 13px; margin: 0; }
+    #result { display: none; }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <a href="/">策略模式</a>
+    <a href="/template">模板方法</a>
+    <a href="/simple-factory" class="active">简单工厂</a>
+    <a href="/factory-method">工厂方法</a>
+    <a href="/abstract-factory">抽象工厂</a>
+    <a href="/chain">责任链</a>
+  </div>
+  <div class="card">
+    <h1>简单工厂模式 — 图形计算器</h1>
+    <div class="desc">
+      <strong>核心：</strong>一个工厂类 + 一个静态方法 + 一个 switch，根据参数创建不同对象。<br/>
+      调用方只需要 <code>ShapeFactory.create("circle")</code>，不需要知道 <code>new Circle()</code>。
+    </div>
+
+    <div class="row">
+      <label>图形</label>
+      <select id="type">
+        <option value="circle">圆形</option>
+        <option value="rectangle">矩形</option>
+        <option value="triangle">三角形</option>
+      </select>
+    </div>
+    <div class="row" id="param1Row">
+      <label id="param1Label">半径</label>
+      <input id="param1" type="number" value="5" min="0.1" step="0.1" />
+    </div>
+    <div class="row" id="param2Row" style="display:none">
+      <label id="param2Label">高</label>
+      <input id="param2" type="number" value="3" min="0.1" step="0.1" />
+    </div>
+    <button id="calcBtn">计算面积</button>
+
+    <div id="result">
+      <div class="section-label">工厂调用链路</div>
+      <div class="trace" id="trace"></div>
+      <div class="section-label">返回结果</div>
+      <pre id="output"></pre>
+    </div>
+  </div>
+
+  <script>
+    const typeEl = document.getElementById('type');
+    const param1Row = document.getElementById('param1Row');
+    const param2Row = document.getElementById('param2Row');
+    const param1Label = document.getElementById('param1Label');
+    const param2Label = document.getElementById('param2Label');
+
+    typeEl.addEventListener('change', () => {
+      const t = typeEl.value;
+      if (t === 'circle') {
+        param1Label.textContent = '半径';
+        param2Row.style.display = 'none';
+      } else if (t === 'rectangle') {
+        param1Label.textContent = '宽';
+        param2Label.textContent = '高';
+        param2Row.style.display = 'flex';
+      } else {
+        param1Label.textContent = '底';
+        param2Label.textContent = '高';
+        param2Row.style.display = 'flex';
+      }
+    });
+
+    document.getElementById('calcBtn').addEventListener('click', async () => {
+      const type = typeEl.value;
+      const p1 = document.getElementById('param1').value;
+      const p2 = document.getElementById('param2').value;
+      const url = `/api/shape?type=${type}&param1=${p1}&param2=${p2}`;
+      const resp = await fetch(url);
+      const data = await resp.json();
+      document.getElementById('trace').textContent = data.factoryTrace;
+      document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+      document.getElementById('result').style.display = 'block';
+    });
+  </script>
+</body>
+</html>
