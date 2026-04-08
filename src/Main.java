@@ -1,5 +1,6 @@
 import abstractfactory.controller.UIController;
 import chain.controller.ChainController;
+import singleton.controller.SingletonController;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import factorymethod.controller.PaymentController;
@@ -29,25 +30,14 @@ public class Main {
         PaymentController paymentController = new PaymentController();
         UIController uiController = new UIController();
         ChainController chainController = new ChainController();
+        SingletonController singletonController = new SingletonController();
 
-        // 策略模式
-        server.createContext("/", exchange -> {
-            if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
-                sendText(exchange, 405, "Method Not Allowed");
-                return;
-            }
-            sendHtml(exchange, FrontendPage.HTML);
-        });
+        // 策略模式（HTML 从文件读取）
+        server.createContext("/", exchange -> serveHtmlFile(exchange, "static/strategy.html"));
         server.createContext("/api/quote", orderController::handle);
 
-        // 模板方法模式
-        server.createContext("/template", exchange -> {
-            if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
-                sendText(exchange, 405, "Method Not Allowed");
-                return;
-            }
-            sendHtml(exchange, TemplateFrontendPage.HTML);
-        });
+        // 模板方法模式（HTML 从文件读取）
+        server.createContext("/template", exchange -> serveHtmlFile(exchange, "static/template.html"));
         server.createContext("/api/export", reportController::handle);
 
         // 简单工厂模式（HTML 从文件读取）
@@ -66,6 +56,10 @@ public class Main {
         server.createContext("/chain", exchange -> serveHtmlFile(exchange, "static/chain.html"));
         server.createContext("/api/order-check", chainController::handle);
 
+        // 单例模式（HTML 从文件读取）
+        server.createContext("/singleton", exchange -> serveHtmlFile(exchange, "static/singleton.html"));
+        server.createContext("/api/singleton", singletonController::handle);
+
         server.setExecutor(null);
         server.start();
 
@@ -78,13 +72,6 @@ public class Main {
             return;
         }
         byte[] bytes = Files.readAllBytes(Paths.get(filePath));
-        exchange.getResponseHeaders().set("Content-Type", "text/html; charset=utf-8");
-        exchange.sendResponseHeaders(200, bytes.length);
-        try (OutputStream os = exchange.getResponseBody()) { os.write(bytes); }
-    }
-
-    private static void sendHtml(HttpExchange exchange, String html) throws IOException {
-        byte[] bytes = html.getBytes(StandardCharsets.UTF_8);
         exchange.getResponseHeaders().set("Content-Type", "text/html; charset=utf-8");
         exchange.sendResponseHeaders(200, bytes.length);
         try (OutputStream os = exchange.getResponseBody()) { os.write(bytes); }

@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>单例模式 Demo</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background: #f5f7fb; color: #1f2937; margin: 0; }
+    .nav { background: #1e293b; padding: 12px 24px; display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+    .nav a { color: #94a3b8; text-decoration: none; font-size: 14px; padding: 4px 8px; border-radius: 6px; }
+    .nav a.active { color: #fff; background: #e11d48; }
+    .nav a:hover:not(.active) { color: #e2e8f0; }
+    .card { max-width: 700px; margin: 32px auto; background: #fff; border-radius: 12px; padding: 28px; box-shadow: 0 8px 20px rgba(0,0,0,.08); }
+    h1 { margin-top: 0; font-size: 22px; }
+    .desc { font-size: 13px; color: #6b7280; margin-bottom: 20px; line-height: 1.6; }
+    .row { margin-bottom: 12px; display: flex; gap: 10px; align-items: center; }
+    label { width: 80px; font-size: 14px; }
+    select { flex: 1; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; }
+    button { width: 100%; margin-top: 8px; padding: 11px; border: 0; border-radius: 8px; background: #e11d48; color: #fff; cursor: pointer; font-size: 15px; font-weight: 500; }
+    button:hover { background: #be123c; }
+    .section-label { margin: 20px 0 8px; font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: .6px; }
+    .proof { padding: 16px; border-radius: 10px; border: 1px solid #e5e7eb; background: #f9fafb; }
+    .proof-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 13px; font-family: 'Consolas', monospace; }
+    .proof-label { color: #6b7280; }
+    .proof-value { font-weight: 600; }
+    .proof-value.same { color: #16a34a; }
+    .proof-value.diff { color: #dc2626; }
+    .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-top: 8px; }
+    .badge.pass { background: #dcfce7; color: #166534; }
+    .badge.fail { background: #fee2e2; color: #991b1b; }
+    .info { margin-top: 12px; padding: 12px 14px; border-left: 3px solid #e11d48; background: #fff1f2; border-radius: 0 6px 6px 0; font-size: 13px; line-height: 1.6; }
+    .info strong { color: #e11d48; }
+    #result { display: none; }
+
+    .code-block { margin-top: 16px; background: #0f172a; border-radius: 8px; overflow: hidden; }
+    .code-title { background: #1e293b; padding: 8px 14px; font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: .5px; }
+    .code-body { padding: 14px; font-size: 12px; color: #cbd5e1; font-family: 'Consolas', monospace; white-space: pre; overflow-x: auto; line-height: 1.6; }
+    .code-body .kw { color: #c084fc; }
+    .code-body .cm { color: #6b7280; }
+    .code-body .str { color: #86efac; }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <a href="/">策略模式</a>
+    <a href="/template">模板方法</a>
+    <a href="/simple-factory">简单工厂</a>
+    <a href="/factory-method">工厂方法</a>
+    <a href="/abstract-factory">抽象工厂</a>
+    <a href="/chain">责任链</a>
+    <a href="/singleton" class="active">单例模式</a>
+  </div>
+  <div class="card">
+    <h1>单例模式 — 五种写法对比</h1>
+    <div class="desc">
+      <strong>核心：</strong>保证一个类在 JVM 中只有一个实例，并提供全局访问点。<br/>
+      选择一种写法，点击按钮验证两次 <code>getInstance()</code> 返回同一个对象（hashCode 相同）。
+    </div>
+
+    <div class="row">
+      <label>写法</label>
+      <select id="type">
+        <option value="eager">1. 饿汉式</option>
+        <option value="lazy">2. 懒汉式 + synchronized</option>
+        <option value="dcl">3. 双重检查锁（DCL）</option>
+        <option value="holder">4. 静态内部类（推荐）</option>
+        <option value="enum">5. 枚举（最安全）</option>
+      </select>
+    </div>
+    <button id="testBtn">获取实例 × 2</button>
+
+    <div id="result">
+      <div class="section-label">单例验证</div>
+      <div class="proof">
+        <div class="proof-row">
+          <span class="proof-label">第 1 次 getInstance().hashCode()</span>
+          <span class="proof-value" id="hash1"></span>
+        </div>
+        <div class="proof-row">
+          <span class="proof-label">第 2 次 getInstance().hashCode()</span>
+          <span class="proof-value" id="hash2"></span>
+        </div>
+        <div style="text-align:center">
+          <span class="badge" id="badge"></span>
+        </div>
+      </div>
+
+      <div class="info">
+        <strong>实现方式：</strong><span id="descText"></span><br/>
+        <strong>关键点：</strong><span id="keyPoint"></span>
+      </div>
+
+      <div class="code-block">
+        <div class="code-title" id="codeTitle"></div>
+        <div class="code-body" id="codeBody"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const codeSnippets = {
+      eager:
+        '<span class="kw">public class</span> EagerSingleton {\n' +
+        '    <span class="cm">// 类加载时就创建</span>\n' +
+        '    <span class="kw">private static final</span> EagerSingleton INSTANCE = <span class="kw">new</span> EagerSingleton();\n' +
+        '    <span class="kw">private</span> EagerSingleton() {}\n' +
+        '    <span class="kw">public static</span> EagerSingleton getInstance() { <span class="kw">return</span> INSTANCE; }\n' +
+        '}',
+      lazy:
+        '<span class="kw">public class</span> LazySingleton {\n' +
+        '    <span class="kw">private static</span> LazySingleton instance;\n' +
+        '    <span class="kw">private</span> LazySingleton() {}\n' +
+        '    <span class="cm">// 整个方法加锁，简单但性能差</span>\n' +
+        '    <span class="kw">public static synchronized</span> LazySingleton getInstance() {\n' +
+        '        <span class="kw">if</span> (instance == <span class="kw">null</span>) instance = <span class="kw">new</span> LazySingleton();\n' +
+        '        <span class="kw">return</span> instance;\n' +
+        '    }\n' +
+        '}',
+      dcl:
+        '<span class="kw">public class</span> DclSingleton {\n' +
+        '    <span class="cm">// volatile 禁止指令重排序</span>\n' +
+        '    <span class="kw">private static volatile</span> DclSingleton instance;\n' +
+        '    <span class="kw">private</span> DclSingleton() {}\n' +
+        '    <span class="kw">public static</span> DclSingleton getInstance() {\n' +
+        '        <span class="kw">if</span> (instance == <span class="kw">null</span>) {                    <span class="cm">// 第一次检查（无锁）</span>\n' +
+        '            <span class="kw">synchronized</span> (DclSingleton.<span class="kw">class</span>) {\n' +
+        '                <span class="kw">if</span> (instance == <span class="kw">null</span>) {            <span class="cm">// 第二次检查（有锁）</span>\n' +
+        '                    instance = <span class="kw">new</span> DclSingleton();\n' +
+        '                }\n' +
+        '            }\n' +
+        '        }\n' +
+        '        <span class="kw">return</span> instance;\n' +
+        '    }\n' +
+        '}',
+      holder:
+        '<span class="kw">public class</span> HolderSingleton {\n' +
+        '    <span class="kw">private</span> HolderSingleton() {}\n' +
+        '    <span class="cm">// 静态内部类，只在 getInstance() 首次调用时加载</span>\n' +
+        '    <span class="kw">private static class</span> Holder {\n' +
+        '        <span class="kw">private static final</span> HolderSingleton INSTANCE = <span class="kw">new</span> HolderSingleton();\n' +
+        '    }\n' +
+        '    <span class="kw">public static</span> HolderSingleton getInstance() {\n' +
+        '        <span class="kw">return</span> Holder.INSTANCE;\n' +
+        '    }\n' +
+        '}',
+      enum:
+        '<span class="cm">// 最简洁、最安全：天然防反射 + 防序列化</span>\n' +
+        '<span class="kw">public enum</span> EnumSingleton {\n' +
+        '    INSTANCE;\n' +
+        '    <span class="kw">public</span> String getInfo() { <span class="kw">return</span> <span class="str">"EnumSingleton"</span>; }\n' +
+        '}'
+    };
+
+    document.getElementById('testBtn').addEventListener('click', async () => {
+      const type = document.getElementById('type').value;
+      const resp = await fetch(`/api/singleton?type=${type}`);
+      const data = await resp.json();
+
+      const h1 = document.getElementById('hash1');
+      const h2 = document.getElementById('hash2');
+      h1.textContent = data.hashCode1;
+      h2.textContent = data.hashCode2;
+
+      const same = data.isSame;
+      h1.className = 'proof-value ' + (same ? 'same' : 'diff');
+      h2.className = 'proof-value ' + (same ? 'same' : 'diff');
+
+      const badge = document.getElementById('badge');
+      badge.className = 'badge ' + (same ? 'pass' : 'fail');
+      badge.textContent = same ? '✅ 同一实例 — 单例验证通过' : '❌ 不同实例 — 单例失败';
+
+      document.getElementById('descText').textContent = data.description;
+      document.getElementById('keyPoint').textContent = data.keyPoint;
+      document.getElementById('codeTitle').textContent = data.className + '.java';
+      document.getElementById('codeBody').innerHTML = codeSnippets[type];
+
+      document.getElementById('result').style.display = 'block';
+    });
+  </script>
+</body>
+</html>
