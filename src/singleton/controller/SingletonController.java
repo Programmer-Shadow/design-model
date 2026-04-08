@@ -57,7 +57,7 @@ public class SingletonController {
                 hash1 = EnumSingleton.INSTANCE.hashCode();
                 hash2 = EnumSingleton.INSTANCE.hashCode();
                 className = "EnumSingleton";
-                desc = "枚举单例：最安全，天然防反射和序列化攻击";
+                desc = "枚举单例：最安全，天然防反射和序列化攻击 " + EnumSingleton.INSTANCE.getInfo();
                 keyPoint = "JVM 保证枚举实例全局唯一，Effective Java 推荐";
                 break;
             default:
